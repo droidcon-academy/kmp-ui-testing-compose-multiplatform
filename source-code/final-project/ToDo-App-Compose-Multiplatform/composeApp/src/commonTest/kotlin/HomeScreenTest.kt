@@ -52,6 +52,20 @@ class HomeScreenTest {
         }
 
     @Test
+    fun launchTheApp_assertHomeScreenIsDisplayed() = runComposeUiTest{
+        setContent {
+            HomeScreen(
+                activeTasks = RequestState.Idle,
+                completedTasks = RequestState.Idle,
+                setAction = {},
+                navigateToTask = {}
+            )
+        }
+
+        onNodeWithTag(TASK_SCREEN).assertExists()
+    }
+
+    @Test
     fun activeTasksEmpty_assertEmptyMessageState() =
         runWithContent(
             configure = {
