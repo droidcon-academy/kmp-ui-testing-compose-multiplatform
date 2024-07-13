@@ -8,7 +8,7 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.navigation.compose.rememberNavController
-import data.MongoDBTest
+import data.FakeMongoDB
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import navigation.SetupNavGraph
@@ -33,11 +33,11 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
 class NavigationTest {
-    private var mongoDB = MongoDBTest()
+    private var mongoDB = FakeMongoDB()
 
     @BeforeTest
     fun setUp() {
-        mongoDB = MongoDBTest()
+        mongoDB = FakeMongoDB()
     }
 
     private fun runWithContent(block: ComposeUiTest.() -> Unit) =

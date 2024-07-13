@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class MongoDBTest : MongoRepository {
+class FakeMongoDB : MongoRepository {
     private var _activeTasks: MutableStateFlow<RequestState<MutableList<ToDoTask>>> =
         MutableStateFlow(RequestState.Success(data = mutableStateListOf()))
     private val activeTasks: StateFlow<RequestState<List<ToDoTask>>> = _activeTasks

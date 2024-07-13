@@ -7,7 +7,7 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.lifecycle.viewmodel.compose.viewModel
-import data.MongoDBTest
+import data.FakeMongoDB
 import util.RequestState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -22,11 +22,11 @@ import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)
 class HomeScreenTest {
-    private var mongoDB = MongoDBTest()
+    private var mongoDB = FakeMongoDB()
 
     @BeforeTest
     fun setUp() {
-        mongoDB = MongoDBTest()
+        mongoDB = FakeMongoDB()
     }
 
     private fun runWithContent(
