@@ -17,10 +17,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+typealias MutableTasks = MutableStateFlow<RequestState<MutableList<ToDoTask>>>
+typealias Tasks = StateFlow<RequestState<List<ToDoTask>>>
+
 class FakeMongoDB : MongoRepository {
-    private var _activeTasks: MutableStateFlow<RequestState<MutableList<ToDoTask>>> =
-        MutableStateFlow(RequestState.Success(data = mutableStateListOf()))
-    private val activeTasks: StateFlow<RequestState<List<ToDoTask>>> = _activeTasks
+    private var _activeTasks: MutableTasks = MutableStateFlow(
+        RequestState.Success(data = mutableStateListOf())
+    )
+    private val activeTasks: Tasks = _activeTasks
         .map { requestState ->
             when (requestState) {
                 is RequestState.Idle -> requestState
@@ -36,14 +40,17 @@ class FakeMongoDB : MongoRepository {
         }
         .stateIn(CoroutineScope(Dispatchers.Main), SharingStarted.Eagerly, RequestState.Loading)
 
-    private var _completedTasks: MutableStateFlow<RequestState<MutableList<ToDoTask>>> =
-        MutableStateFlow(RequestState.Success(data = mutableStateListOf()))
-    private val completedTasks: StateFlow<RequestState<List<ToDoTask>>> = _completedTasks
+    private var _completedTasks: MutableTasks = MutableStateFlow(
+        RequestState.Success(data = mutableStateListOf())
+    )
+    private val completedTasks: Tasks = _completedTasks
         .map { requestState ->
             when (requestState) {
                 is RequestState.Idle -> requestState
                 is RequestState.Loading -> requestState
-                is RequestState.Success -> RequestState.Success(requestState.data.filter { it.completed })
+                is RequestState.Success -> RequestState.Success(
+                    requestState.data.filter { it.completed }
+                )
                 is RequestState.Error -> requestState
             }
         }
@@ -65,7 +72,6 @@ class FakeMongoDB : MongoRepository {
 
     override suspend fun addTask(task: ToDoTask) {
         val updatedTasks = _activeTasks.value.getSuccessData()
-            .toMutableList()
             .also { it.add(task) }
         _activeTasks.value = RequestState.Success(updatedTasks.toSnapshotStateList())
     }
@@ -73,7 +79,6 @@ class FakeMongoDB : MongoRepository {
     override suspend fun updateTask(task: ToDoTask) {
         val selectedTaskId = _activeTasks.value.getSuccessData().indexOf(task)
         val updatedTasks = _activeTasks.value.getSuccessData()
-            .toMutableList()
             .also { it[selectedTaskId + 1] = task }
         _activeTasks.value = RequestState.Success(
             updatedTasks.toSnapshotStateList()
@@ -86,7 +91,6 @@ class FakeMongoDB : MongoRepository {
         var completedTask: ToDoTask? = null
         if (!task.completed) {
             _activeTasks.value.getSuccessData()
-                .toMutableList()
                 .forEach { item ->
                     if (item != task) {
                         updatedTasks.add(item)
@@ -99,7 +103,6 @@ class FakeMongoDB : MongoRepository {
             _activeTasks.value = RequestState.Success(updatedTasks.toSnapshotStateList())
         } else {
             _completedTasks.value.getSuccessData()
-                .toMutableList()
                 .forEach { item ->
                     if (item != task) {
                         updatedTasks.add(item)
@@ -130,7 +133,6 @@ class FakeMongoDB : MongoRepository {
 
     override suspend fun setFavorite(task: ToDoTask) {
         val updatedTasks = _activeTasks.value.getSuccessData()
-            .toMutableList()
             .also { currentTasks ->
                 currentTasks.find { it._id == task._id }
                     ?.let { it.favorite = !it.favorite }
@@ -153,24 +155,8 @@ class FakeMongoDB : MongoRepository {
         _activeTasks.value = error
     }
 
-    fun addLoadingOnActiveTasks() {
-        _activeTasks.value = RequestState.Loading
-    }
-
-    fun addIdleOnActiveTasks() {
-        _activeTasks.value = RequestState.Idle
-    }
-
     fun addErrorOnCompletedTasks(error: RequestState.Error) {
         _completedTasks.value = error
-    }
-
-    fun addLoadingOnCompletedTasks() {
-        _completedTasks.value = RequestState.Loading
-    }
-
-    fun addIdleOnCompletedTasks() {
-        _completedTasks.value = RequestState.Idle
     }
 
     fun addErrorOnAllTask(error: RequestState.Error) {
@@ -178,10 +164,27 @@ class FakeMongoDB : MongoRepository {
         _completedTasks.value = error
     }
 
+    fun addLoadingOnActiveTasks() {
+        _activeTasks.value = RequestState.Loading
+    }
+
+    fun addLoadingOnCompletedTasks() {
+        _completedTasks.value = RequestState.Loading
+    }
+
     fun addLoadingOnAllTasks() {
         _completedTasks.value = RequestState.Loading
         _activeTasks.value = RequestState.Loading
     }
+
+    fun addIdleOnActiveTasks() {
+        _activeTasks.value = RequestState.Idle
+    }
+
+    fun addIdleOnCompletedTasks() {
+        _completedTasks.value = RequestState.Idle
+    }
+
 }
 
 fun <T> List<T>.toSnapshotStateList(): SnapshotStateList<T> {

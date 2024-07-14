@@ -17,6 +17,7 @@ import util.TestTag.ACTIVE_ERROR_TEXT
 import util.TestTag.ACTIVE_LOADING_INDICATOR
 import util.TestTag.COMPLETED_ERROR_TEXT
 import util.TestTag.COMPLETED_LOADING_INDICATOR
+import util.TestTag.HOME_SCREEN
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
@@ -62,7 +63,7 @@ class HomeScreenTest {
             )
         }
 
-        onNodeWithTag(TASK_SCREEN).assertExists()
+        onNodeWithTag(HOME_SCREEN).assertExists()
     }
 
     @Test
